@@ -76,7 +76,8 @@ In the PISTON version of CoGL, the simulation is computed primarily using data-p
 primitives, in which, for example, each thread computes the gradient at one grid cell. In an extended
 version of this proxy app, not included here, more complex isosurface, threshold, and cut surface
 visualization algorithms already implemented in PISTON can be applied to the strain field computed by
-the simulation and rendered in-situ as the simulation is running.
+the simulation and rendered in-situ as the simulation is running.  Also, an extension of this proxy app 
+exists that uses a distributed PISTON implementation, allowing the code to run across multiple GPUs or CPUs.
 
 Preliminary testing on a single node has shown that the PISTON implementation compiled to an
 OpenMP backend and run on multiple cores scales well with the number of cores and outperforms the
@@ -143,6 +144,8 @@ This release of CoGL is a somewhat simplified version which does not include add
 operators, such as isosurface, threshold, and cut surface. It only renders each cell as a cube. Since only
 the surface of the grid is visible, this can result in a lot of “wasted” rendering of interior cubes. If you are
 interested in this version with the additional visualization operators, please contact the authors.
+Also, an extension of this proxy app exists that uses a distributed PISTON implementation, allowing
+the code to run across multiple GPUs or CPUs.
 
 
 GLEW Redistribution Notes
