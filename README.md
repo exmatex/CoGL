@@ -2,7 +2,9 @@ CoGL
 ====
 
 Authors: Christopher Sewell (csewell@lanl.gov), Turab Lookman, and Kipton Barros
+
 Version 1.0, September 2013
+
 LA-UR-13-26956
 
 Developed as part of the Exascale Co-Design Center for Materials in Extreme Environments
