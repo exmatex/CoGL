@@ -89,7 +89,7 @@ Furthermore, when the simulation is run on the GPU, rendering can be implemented
 additional performance cost because all the data can be kept on the card using CUDA’s interop feature.
 
 This simulation was described in the following paper
-(http://www.sciencedirect.com/science/article/pii/S1359645406000668):
+(http://www.sciencedirect.com/science/article/pii/S1359645406000668)
 Rajeev Ahluwalia, Turab Lookman, and Avadh Saxena. “Dynamic strain loading of cubic to tetragonal
 martensites”, Acta Materialia, Volume 54, Issue 8, May 2006, Pages 2109-2120.
 
