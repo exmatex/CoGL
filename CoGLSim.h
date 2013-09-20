@@ -161,7 +161,7 @@ public:
     thrust::host_vector<int> h_indices;
 
     //! Simulation parameters
-    double ac, as, d2, delta, eo, eta, h, tau;
+    T ac, as, d2, delta, eo, eta, h, tau;
     int sim_time;
 
     //! Vertex buffers used for interop
@@ -191,28 +191,28 @@ public:
     //---------------------------------------------------------------------------
     // CoGLSim::initialize_simulation()
     //
-    // param    thrust::host_vector<double> a_ux              Initial x positions
-    // param    thrust::host_vector<double> a_uy              Initial y positions
-    // param    thrust::host_vector<double> a_uz              Initial z positions
-    // param    thrust::host_vector<double> a_uxdt            Initial x velocities
-    // param    thrust::host_vector<double> a_uydt            Initial y velocities
-    // param    thrust::host_vector<double> a_uzdt            Initial z velocities
-    // param    thrust::host_vector<double> a_uxx_applied     Initial displacements
-    // param    double a_ac                                     Simulation parameter
-    // param    double a_as                                     Simulation parameter
-    // param    double a_d2                                     Simulation parameter
-    // param    double a_delta                                  Simulation parameter
-    // param    double a_eo                                     Simulation parameter
-    // param    double a_eta                                    Simulation parameter
-    // param    double a_h                                      Simulation parameter
-    // param    double a_tau                                    Simulation parameter
+    // param    thrust::host_vector<T> a_ux              Initial x positions
+    // param    thrust::host_vector<T> a_uy              Initial y positions
+    // param    thrust::host_vector<T> a_uz              Initial z positions
+    // param    thrust::host_vector<T> a_uxdt            Initial x velocities
+    // param    thrust::host_vector<T> a_uydt            Initial y velocities
+    // param    thrust::host_vector<T> a_uzdt            Initial z velocities
+    // param    thrust::host_vector<T> a_uxx_applied     Initial displacements
+    // param    T a_ac                                   Simulation parameter
+    // param    T a_as                                   Simulation parameter
+    // param    T a_d2                                   Simulation parameter
+    // param    T a_delta                                Simulation parameter
+    // param    T a_eo                                   Simulation parameter
+    // param    T a_eta                                  Simulation parameter
+    // param    T a_h                                    Simulation parameter
+    // param    T a_tau                                  Simulation parameter
     //
     // Initialize simulation parameters, read input data, and pass to CoGLSim class
     //---------------------------------------------------------------------------
-    void initialize_simulation(thrust::host_vector<double> a_ux, thrust::host_vector<double> a_uy, thrust::host_vector<double> a_uz,
-                              thrust::host_vector<double> a_uxdt, thrust::host_vector<double> a_uydt, thrust::host_vector<double> a_uzdt,
-                              thrust::host_vector<double> a_uxx_applied, double a_ac, double a_as, double a_d2, double a_delta, double a_eo, 
-                              double a_eta, double a_h, double a_tau)
+    void initialize_simulation(thrust::host_vector<T> a_ux, thrust::host_vector<T> a_uy, thrust::host_vector<T> a_uz,
+                              thrust::host_vector<T> a_uxdt, thrust::host_vector<T> a_uydt, thrust::host_vector<T> a_uzdt,
+                              thrust::host_vector<T> a_uxx_applied, T a_ac, T a_as, T a_d2, T a_delta, T a_eo, 
+                              T a_eta, T a_h, T a_tau)
     {
       ux = a_ux;  uy = a_uy;  uz = a_uz;  uxdt = a_uxdt;  uydt = a_uydt;  uzdt = a_uzdt;  uxx_applied = a_uxx_applied; 
 
@@ -273,9 +273,9 @@ public:
                                                                   << e2[30*n_dim*n_dim] << " " << e2[63*n_dim*n_dim] << std::endl;
       #endif
 
-      const double sqrt2 = 1.41421356237;
-      const double sqrt3 = 1.73205080757;
-      const double sqrt6 = 2.44948974278;
+      const T sqrt2 = 1.41421356237;
+      const T sqrt3 = 1.73205080757;
+      const T sqrt6 = 2.44948974278;
 
       thrust::transform(INDICES, uxx.begin(), gradient_x(thrust::raw_pointer_cast(&*ux.begin()), n_dim, h));
       thrust::transform(INDICES, uxy.begin(), gradient_y(thrust::raw_pointer_cast(&*ux.begin()), n_dim, h));
@@ -288,7 +288,7 @@ public:
       thrust::transform(INDICES, uzz.begin(), gradient_z(thrust::raw_pointer_cast(&*uz.begin()), n_dim, h));
 
       etayy = uyy;  etazz = uzz;
-      thrust::transform(uxx.begin(), uxx.end(), uxx_applied.begin(), etaxx.begin(), thrust::plus<double>());
+      thrust::transform(uxx.begin(), uxx.end(), uxx_applied.begin(), etaxx.begin(), thrust::plus<T>());
       thrust::transform(CountingIterator(0), CountingIterator(0)+n_cells, etaxy.begin(), etaf(thrust::raw_pointer_cast(&*uxy.begin()), thrust::raw_pointer_cast(&*uyx.begin()), h));
       thrust::transform(CountingIterator(0), CountingIterator(0)+n_cells, etaxz.begin(), etaf(thrust::raw_pointer_cast(&*uxz.begin()), thrust::raw_pointer_cast(&*uzx.begin()), h));
       thrust::transform(CountingIterator(0), CountingIterator(0)+n_cells, etayz.begin(), etaf(thrust::raw_pointer_cast(&*uyz.begin()), thrust::raw_pointer_cast(&*uzy.begin()), h));
@@ -465,11 +465,11 @@ public:
     struct color_box : public thrust::unary_function<int, void>
     {
       float4* colors;
-      double* values;
-      double min_value, max_value;
+      T* values;
+      T min_value, max_value;
 
       __host__ __device__
-      color_box(float4* colors, double* values, double min_value, double max_value) : colors(colors), values(values), min_value(min_value), max_value(max_value) {};
+      color_box(float4* colors, T* values, T min_value, T max_value) : colors(colors), values(values), min_value(min_value), max_value(max_value) {};
 
       __host__ __device__
       void operator() (int id) const
@@ -510,15 +510,14 @@ public:
     //
     // Compute gradient in x dimension at given cell index
     //---------------------------------------------------------------------------
-    struct gradient_x : public thrust::unary_function<int, double>
+    struct gradient_x : public thrust::unary_function<int, T>
     {
-      double* x;
+      T* x;
       int n_dim, dim_sq;
       unsigned reciprocal;
-      double hi, n_dim_r, dim_sq_r;
+      T hi, n_dim_r, dim_sq_r;
 
-      __host__ __device__
-      gradient_x(double* x, int n_dim, double h) : x(x), n_dim(n_dim), hi(1.0/h), dim_sq(n_dim*n_dim)
+      gradient_x(T* x, int n_dim, T h) : x(x), n_dim(n_dim), hi(1.0/h), dim_sq(n_dim*n_dim)
       {
         #ifdef OPTIMIZE_KERNEL_DIVISIONS
           reciprocal = ((34359738368.0) / n_dim + 0.9999); n_dim_r = 1.0/n_dim;  dim_sq_r = 1.0/(n_dim*n_dim);
@@ -526,7 +525,7 @@ public:
       };
 
       __host__ __device__
-      double operator() (int index) const
+      T operator() (int index) const
       {
         COMPUTE_INDICES
 
@@ -537,7 +536,7 @@ public:
           int offset1 = i+1; if (offset1 >= n_dim) offset1 = 0;
           int offset2 = i-1; if (offset2 < 0) offset2 = n_dim-1;
         #endif
-	double grad = 0.5*hi*(x[offset1*dim_sq+j*n_dim+l]-x[offset2*dim_sq+j*n_dim+l]);
+	T grad = 0.5*hi*(x[offset1*dim_sq+j*n_dim+l]-x[offset2*dim_sq+j*n_dim+l]);
 	return grad;
       }
     };
@@ -548,15 +547,14 @@ public:
     //
     // Compute gradient in y dimension at given cell index
     //---------------------------------------------------------------------------
-    struct gradient_y : public thrust::unary_function<int, double>
+    struct gradient_y : public thrust::unary_function<int, T>
     {
-      double* x;
+      T* x;
       int n_dim, dim_sq;
       unsigned reciprocal;
-      double hi, n_dim_r, dim_sq_r;
+      T hi, n_dim_r, dim_sq_r;
 
-      __host__ __device__
-      gradient_y(double* x, int n_dim, double h) : x(x), n_dim(n_dim), hi(1.0/h), dim_sq(n_dim*n_dim)
+      gradient_y(T* x, int n_dim, T h) : x(x), n_dim(n_dim), hi(1.0/h), dim_sq(n_dim*n_dim)
       {
         #ifdef OPTIMIZE_KERNEL_DIVISIONS
           reciprocal = ((34359738368.0) / n_dim + 0.9999); n_dim_r = 1.0/n_dim;  dim_sq_r = 1.0/(n_dim*n_dim);
@@ -564,7 +562,7 @@ public:
       };
 
       __host__ __device__
-      double operator() (int index) const
+      T operator() (int index) const
       {
 	COMPUTE_INDICES
 
@@ -575,7 +573,7 @@ public:
     	  int offset1 = j+1; if (offset1 >= n_dim) offset1 = 0;
           int offset2 = j-1; if (offset2 < 0) offset2 = n_dim-1;
         #endif
-    	double grad = 0.5*hi*(x[i*dim_sq+offset1*n_dim+l]-x[i*dim_sq+offset2*n_dim+l]);
+    	T grad = 0.5*hi*(x[i*dim_sq+offset1*n_dim+l]-x[i*dim_sq+offset2*n_dim+l]);
         return grad;
       }
     };
@@ -586,15 +584,14 @@ public:
     //
     // Compute gradient in z dimension at given cell index
     //---------------------------------------------------------------------------
-    struct gradient_z : public thrust::unary_function<int, double>
+    struct gradient_z : public thrust::unary_function<int, T>
     {
-      double* x;
+      T* x;
       int n_dim, dim_sq;
       unsigned reciprocal;
-      double hi, n_dim_r, dim_sq_r;
+      T hi, n_dim_r, dim_sq_r;
 
-      __host__ __device__
-      gradient_z(double* x, int n_dim, double h) : x(x), n_dim(n_dim), hi(1.0/h), dim_sq(n_dim*n_dim)
+      gradient_z(T* x, int n_dim, T h) : x(x), n_dim(n_dim), hi(1.0/h), dim_sq(n_dim*n_dim)
       {
         #ifdef OPTIMIZE_KERNEL_DIVISIONS
           reciprocal = ((34359738368.0) / n_dim + 0.9999); n_dim_r = 1.0/n_dim;  dim_sq_r = 1.0/(n_dim*n_dim);
@@ -602,7 +599,7 @@ public:
       };
 
       __host__ __device__
-      double operator() (int index) const
+      T operator() (int index) const
       {
 	COMPUTE_INDICES
 
@@ -613,7 +610,7 @@ public:
 	  int offset1 = l+1; if (offset1 >= n_dim) offset1 = 0;
           int offset2 = l-1; if (offset2 < 0) offset2 = n_dim-1;
         #endif
-	double grad = 0.5*hi*(x[i*dim_sq+j*n_dim+offset1]-x[i*dim_sq+j*n_dim+offset2]);
+	T grad = 0.5*hi*(x[i*dim_sq+j*n_dim+offset1]-x[i*dim_sq+j*n_dim+offset2]);
 	return grad;
       }
     };
@@ -624,15 +621,14 @@ public:
     //
     // Compute laplacian at given cell index
     //---------------------------------------------------------------------------
-    struct laplacian : public thrust::unary_function<int, double>
+    struct laplacian : public thrust::unary_function<int, T>
     {
-      double* x;
+      T* x;
       int n_dim, dim_sq;
       unsigned reciprocal;
-      double hi_sq, n_dim_r, dim_sq_r;
+      T hi_sq, n_dim_r, dim_sq_r;
 
-      __host__ __device__
-      laplacian(double* x, int n_dim, double h) : x(x), n_dim(n_dim), hi_sq(1.0/(h*h)), dim_sq(n_dim*n_dim)
+      laplacian(T* x, int n_dim, T h) : x(x), n_dim(n_dim), hi_sq(1.0/(h*h)), dim_sq(n_dim*n_dim)
       {
         #ifdef OPTIMIZE_KERNEL_DIVISIONS
           reciprocal = ((34359738368.0) / n_dim + 0.9999); n_dim_r = 1.0/n_dim;  dim_sq_r = 1.0/(n_dim*n_dim);
@@ -640,7 +636,7 @@ public:
       };
 
       __host__ __device__
-      double operator() (int index) const
+      T operator() (int index) const
       {
 	COMPUTE_INDICES
 
@@ -654,8 +650,8 @@ public:
 	  int l1 = l+1; if (l1 >= n_dim) l1 = 0;  int l2 = l-1; if (l2 <  0) l2 = n_dim-1;
         #endif
 
-	double lap = hi_sq*(x[i1*dim_sq+j*n_dim+l]+x[i2*dim_sq+j*n_dim+l]+x[i*dim_sq+j1*n_dim+l]+x[i*dim_sq+j2*n_dim+l]+
-                     x[i*dim_sq+j*n_dim+l1]+x[i*dim_sq+j*n_dim+l2]-6.0*x[i*dim_sq+j*n_dim+l]);
+	T lap = hi_sq*(x[i1*dim_sq+j*n_dim+l]+x[i2*dim_sq+j*n_dim+l]+x[i*dim_sq+j1*n_dim+l]+x[i*dim_sq+j2*n_dim+l]+
+                       x[i*dim_sq+j*n_dim+l1]+x[i*dim_sq+j*n_dim+l2]-6.0*x[i*dim_sq+j*n_dim+l]);
         return lap;
       }
     };
@@ -666,18 +662,17 @@ public:
     //
     // Calculate intermediate values for Ginzburg-Landau simulation computations
     //---------------------------------------------------------------------------
-    struct etaf : public thrust::unary_function<int, void>
+    struct etaf : public thrust::unary_function<int, T>
     {
-      double *x, *y;
-      double hi;
+      T *x, *y;
+      T hi;
+
+      etaf(T* x, T* y, T h) : x(x), y(y), hi(1.0/h) {};
 
       __host__ __device__
-      etaf(double* x, double* y, double h) : x(x), y(y), hi(1.0/h) {};
-
-      __host__ __device__
-      double operator() (int index) const
+      T operator() (int index) const
       {
-    	double value = 0.5*hi*(x[index]+y[index]);
+    	T value = 0.5*hi*(x[index]+y[index]);
     	return value;
       }
     };
@@ -688,18 +683,17 @@ public:
     //
     // Calculate intermediate values for Ginzburg-Landau simulation computations
     //---------------------------------------------------------------------------
-    struct sax3 : public thrust::unary_function<int, void>
+    struct sax3 : public thrust::unary_function<int, T>
     {
-      double *x, *y, *z;
-      double a, b, c, hi;
+      T *x, *y, *z;
+      T a, b, c, hi;
+
+      sax3(T* x, T* y, T* z, T a, T b, T c, T h) : x(x), y(y), z(z), a(a), b(b), c(c), hi(1.0/h) {};
 
       __host__ __device__
-      sax3(double* x, double* y, double* z, double a, double b, double c, double h) : x(x), y(y), z(z), a(a), b(b), c(c), hi(1.0/h) {};
-
-      __host__ __device__
-      double operator() (int index) const
+      T operator() (int index) const
       {
-        double value = hi*(a*x[index]+b*y[index]+c*z[index]);
+        T value = hi*(a*x[index]+b*y[index]+c*z[index]);
         return value;
       }
     };
@@ -710,18 +704,17 @@ public:
     //
     // Calculate intermediate values for Ginzburg-Landau simulation computations
     //---------------------------------------------------------------------------
-    struct sax2 : public thrust::unary_function<int, void>
+    struct sax2 : public thrust::unary_function<int, T>
     {
-      double *x, *y;
-      double a, b, hi;
+      T *x, *y;
+      T a, b, hi;
+
+      sax2(T* x, T* y, T a, T b, T h) : x(x), y(y), a(a), b(b), hi(1.0/h) {};
 
       __host__ __device__
-      sax2(double* x, double* y, double a, double b, double h) : x(x), y(y), a(a), b(b), hi(1.0/h) {};
-
-      __host__ __device__
-      double operator() (int index) const
+      T operator() (int index) const
       {
-        double value = hi*(a*x[index]+b*y[index]);
+        T value = hi*(a*x[index]+b*y[index]);
         return value;
       }
     };
@@ -732,18 +725,17 @@ public:
     //
     // Calculate intermediate values for Ginzburg-Landau simulation computations
     //---------------------------------------------------------------------------
-    struct sax1 : public thrust::unary_function<int, void>
+    struct sax1 : public thrust::unary_function<int, T>
     {
-      double *x;
-      double a;
+      T *x;
+      T a;
+
+      sax1(T* x, T a) : x(x), a(a) {};
 
       __host__ __device__
-      sax1(double* x, double a) : x(x), a(a) {};
-
-      __host__ __device__
-      double operator() (int index) const
+      T operator() (int index) const
       {
-        double value = a*x[index];
+        T value = a*x[index];
         return value;
       }
     };
@@ -754,18 +746,17 @@ public:
     //
     // Calculate intermediate values for Ginzburg-Landau simulation computations
     //---------------------------------------------------------------------------
-    struct g1f : public thrust::unary_function<int, void>
+    struct g1f : public thrust::unary_function<int, T>
     {
-      double *x;
-      double AC;
+      T *x;
+      T AC;
+
+      g1f(T* x, T AC) : x(x), AC(AC) {};
 
       __host__ __device__
-      g1f(double* x, double AC) : x(x), AC(AC) {};
-
-      __host__ __device__
-      double operator() (int i) const
+      T operator() (int i) const
       {
-        double value = AC*x[i];
+        T value = AC*x[i];
         return value;
       }
     };
@@ -776,19 +767,18 @@ public:
     //
     // Calculate intermediate values for Ginzburg-Landau simulation computations
     //---------------------------------------------------------------------------
-    struct g2f : public thrust::unary_function<int, void>
+    struct g2f : public thrust::unary_function<int, T>
     {
-      double *x, *y, *z;
-      double tau, D2;
+      T *x, *y, *z;
+      T tau, D2;
 
-      __host__ __device__
-      g2f(double* x, double* y, double* z, double tau, double D2) : 
+      g2f(T* x, T* y, T* z, T tau, T D2) : 
                x(x), y(y), z(z), tau(tau), D2(D2) {};
 
       __host__ __device__
-      double operator() (int i) const
+      T operator() (int i) const
       {
-        double value = 2.*tau*x[i]-D2*z[i]-12.*x[i]*y[i]+4.*x[i]*(x[i]*x[i]+y[i]*y[i]);
+        T value = 2.*tau*x[i]-D2*z[i]-12.*x[i]*y[i]+4.*x[i]*(x[i]*x[i]+y[i]*y[i]);
         return value;
       }
     };
@@ -799,19 +789,18 @@ public:
     //
     // Calculate intermediate values for Ginzburg-Landau simulation computations
     //---------------------------------------------------------------------------
-    struct g3f : public thrust::unary_function<int, void>
+    struct g3f : public thrust::unary_function<int, T>
     {
-      double *x, *y, *z;
-      double tau, D2;
+      T *x, *y, *z;
+      T tau, D2;
 
-      __host__ __device__
-      g3f(double* x, double* y, double* z, double tau, double D2) : 
+      g3f(T* x, T* y, T* z, T tau, T D2) : 
                x(x), y(y), z(z), tau(tau), D2(D2) {};
 
       __host__ __device__
-      double operator() (int i) const
+      T operator() (int i) const
       {
-        double value = 2.*tau*y[i]-D2*z[i]+6.*(y[i]*y[i]-x[i]*x[i])+4.*y[i]*(x[i]*x[i]+y[i]*y[i]);
+        T value = 2.*tau*y[i]-D2*z[i]+6.*(y[i]*y[i]-x[i]*x[i])+4.*y[i]*(x[i]*x[i]+y[i]*y[i]);
         return value;
       }
     };
@@ -822,18 +811,17 @@ public:
     //
     // Calculate intermediate values for Ginzburg-Landau simulation computations
     //---------------------------------------------------------------------------
-    struct vff : public thrust::unary_function<int, void>
+    struct vff : public thrust::unary_function<int, T>
     {
-      double *v, *w, *x, *y, *z;
-      double delta, eta;
+      T *v, *w, *x, *y, *z;
+      T delta, eta;
+
+      vff(T* v, T* w, T* x, T* y, T* z, T delta, T eta) : v(v), w(w), x(x), y(y), z(z), delta(delta), eta(eta) {};
 
       __host__ __device__
-      vff(double* v, double* w, double* x, double* y, double* z, double delta, double eta) : v(v), w(w), x(x), y(y), z(z), delta(delta), eta(eta) {};
-
-      __host__ __device__
-      double operator() (int i) const
+      T operator() (int i) const
       {
-        double value = v[i]+delta*(w[i]+x[i]+y[i]+eta*z[i]);
+        T value = v[i]+delta*(w[i]+x[i]+y[i]+eta*z[i]);
         return value;
       }
     };
